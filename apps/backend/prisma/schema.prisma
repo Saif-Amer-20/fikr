@@ -1,0 +1,218 @@
+// Prisma schema for the Fikr platform.
+// Defines models, relations, enums and indices.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
+  department  String?
+  roleId      Int?
+  role        Role?        @relation(fields: [roleId], references: [id])
+  isActive    Boolean      @default(true)
+  profilePicture String?
+  createdAt   DateTime     @default(now())
+  // Relations
+  ideas       Idea[]       @relation("IdeaOwner")
+  votes       Vote[]
+  comments    Comment[]
+  badges      UserBadge[]
+  surveyResponses SurveyResponse[]
+  auditLogs   AuditLog[]   @relation("Actor")
+
+  @@index([department])
+}
+
+model Role {
+  id          Int             @id @default(autoincrement())
+  name        String          @unique
+  description String?
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          Int             @id @default(autoincrement())
+  key         String          @unique
+  description String?
+  roles       RolePermission[]
+}
+
+// Pivot table linking roles and permissions (many-to-many).
+model RolePermission {
+  roleId       Int
+  permissionId Int
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  @@id([roleId, permissionId]) // composite primary key【985668824657452†L176-L188】
+}
+
+model Idea {
+  id         Int          @id @default(autoincrement())
+  title      String
+  summary    String
+  details    String
+  category   String?
+  ownerId    Int
+  owner      User         @relation("IdeaOwner", fields: [ownerId], references: [id])
+  status     IdeaStatus   @default(maswada)
+  stage      IdeaStage    @default(muqadama)
+  score      Int          @default(0)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  attachments IdeaAttachment[]
+  votes      Vote[]
+  comments   Comment[]
+  challenges IdeaChallenge[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([stage])
+}
+
+// Enumeration for idea status.
+enum IdeaStatus {
+  maswada           // مسودة - draft
+  mursala           // مُرسلة - submitted  
+  qaid_almurajaa    // قيد المراجعة - reviewing
+  muwafaq_alayha    // مُوافق عليها - approved
+  marfuda           // مرفوضة - rejected
+  qaid_altanfeedh   // قيد التنفيذ - in_project
+}
+
+// Enumeration for idea stage (lifecycle).
+enum IdeaStage {
+  muqadama          // مُقدمة - submission
+  taqyeem_alaqran   // تقييم الأقران - peer_feedback
+  murajaat_allajana // مراجعة اللجنة - committee_review
+  dirasat_aljadwa   // دراسة الجدوى - feasibility
+  almuwafaqa        // الموافقة - approval
+  altasleem         // التسليم - handoff
+  altanfeedh        // التنفيذ - execution
+}
+
+model IdeaAttachment {
+  id       Int      @id @default(autoincrement())
+  ideaId   Int
+  idea     Idea     @relation(fields: [ideaId], references: [id])
+  url      String
+  fileType String
+
+  @@index([ideaId])
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  ideaId    Int
+  voterId   Int
+  createdAt DateTime @default(now())
+  idea      Idea     @relation(fields: [ideaId], references: [id])
+  voter     User     @relation(fields: [voterId], references: [id])
+
+  @@index([ideaId])
+  @@index([voterId])
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  ideaId     Int
+  authorId   Int
+  content    String
+  isAnonymous Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  idea       Idea     @relation(fields: [ideaId], references: [id])
+  author     User     @relation(fields: [authorId], references: [id])
+
+  @@index([ideaId])
+  @@index([authorId])
+}
+
+model Challenge {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  startAt     DateTime
+  endAt       DateTime
+  rulesJson   Json?
+  maxVotesPerUser Int?
+  ideas       IdeaChallenge[]
+
+  @@index([startAt])
+  @@index([endAt])
+}
+
+model IdeaChallenge {
+  ideaId      Int
+  challengeId Int
+  idea        Idea      @relation(fields: [ideaId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  @@id([ideaId, challengeId]) // composite primary key【985668824657452†L176-L188】
+  @@index([challengeId])
+}
+
+model Badge {
+  id       Int      @id @default(autoincrement())
+  name     String   @unique
+  points   Int
+  criteriaJson Json?
+  users    UserBadge[]
+}
+
+model UserBadge {
+  userId    Int
+  badgeId   Int
+  grantedAt DateTime @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  badge     Badge     @relation(fields: [badgeId], references: [id])
+  @@id([userId, badgeId])
+  @@index([badgeId])
+}
+
+model Survey {
+  id         Int    @id @default(autoincrement())
+  title      String
+  description String?
+  schemaJson Json
+  active     Boolean @default(false)
+  responses  SurveyResponse[]
+}
+
+model SurveyResponse {
+  id        Int    @id @default(autoincrement())
+  surveyId  Int
+  userId    Int
+  answersJson Json
+  createdAt DateTime @default(now())
+  survey    Survey  @relation(fields: [surveyId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@index([surveyId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id       Int     @id @default(autoincrement())
+  actorId  Int
+  action   String
+  entity   String
+  entityId Int
+  metaJson Json?
+  createdAt DateTime @default(now())
+  actor    User    @relation("Actor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entity])
+}
+
+model Settings {
+  key       String  @id
+  valueJson Json
+}

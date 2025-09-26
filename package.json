@@ -1,0 +1,16 @@
+{
+  "name": "fikr-platform",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace apps/backend\" \"npm run dev --workspace apps/web\"",
+    "build": "npm run build --workspace apps/backend && npm run build --workspace apps/web",
+    "lint": "npm run lint --workspace apps/backend && npm run lint --workspace apps/web"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  }
+}
