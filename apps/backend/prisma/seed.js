@@ -1,9 +1,4 @@
-/*
- * سكربت تهيئة قاعدة البيانات بالبيانات التجريبية.
- * يمكن تشغيله بواسطة: npx ts-node prisma/seed.ts
- */
-
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 
@@ -189,7 +184,7 @@ async function main() {
     }
   ];
 
-  // Clear existing data first (optional - be careful in production!)
+  // Clear existing dummy data first (optional - be careful in production!)
   console.log('🧹 Cleaning existing dummy data...');
   await prisma.vote.deleteMany({});
   await prisma.comment.deleteMany({});
@@ -291,14 +286,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  });
-
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
   });

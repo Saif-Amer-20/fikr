@@ -119,6 +119,7 @@ model Vote {
 
   @@index([ideaId])
   @@index([voterId])
+  @@unique([ideaId, voterId])
 }
 
 model Comment {

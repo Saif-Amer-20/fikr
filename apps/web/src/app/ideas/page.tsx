@@ -68,6 +68,7 @@ const stageLabels = {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
+  const [selectedStage, setSelectedStage] = useState('');
   const [sortBy, setSortBy] = useState('newest');
 
   const categories = [
@@ -84,8 +85,26 @@ const stageLabels = {
     'الإدارة والقيادة',
     'أخرى'
   ];
-  const statuses = ['جميع الحالات', 'maswada', 'mursala', 'qaid_almurajaa', 'muwafaq_alayha', 'marfuda', 'qaid_altanfeedh'];
-  const stages = ['جميع المراحل', 'muqadama', 'taqyeem_alaqran', 'murajaat_allajana', 'dirasat_aljadwa', 'almuwafaqa', 'altasleem', 'altanfeedh'];
+  const statuses = [
+    { value: '', label: 'جميع الحالات' },
+    { value: 'maswada', label: 'مسودة' },
+    { value: 'mursala', label: 'مُرسلة' },
+    { value: 'qaid_almurajaa', label: 'قيد المراجعة' },
+    { value: 'muwafaq_alayha', label: 'مُوافق عليها' },
+    { value: 'marfuda', label: 'مرفوضة' },
+    { value: 'qaid_altanfeedh', label: 'قيد التنفيذ' },
+  ];
+  
+  const stages = [
+    { value: '', label: 'جميع المراحل' },
+    { value: 'muqadama', label: 'مُقدمة' },
+    { value: 'taqyeem_alaqran', label: 'تقييم الأقران' },
+    { value: 'murajaat_allajana', label: 'مراجعة اللجنة' },
+    { value: 'dirasat_aljadwa', label: 'دراسة الجدوى' },
+    { value: 'almuwafaqa', label: 'الموافقة' },
+    { value: 'altasleem', label: 'التسليم' },
+    { value: 'altanfeedh', label: 'التنفيذ' },
+  ];
 
   useEffect(() => {
     loadIdeas();
@@ -93,7 +112,7 @@ const stageLabels = {
 
   useEffect(() => {
     filterAndSortIdeas();
-  }, [ideas, searchTerm, selectedCategory, selectedStatus, sortBy]);
+  }, [ideas, searchTerm, selectedCategory, selectedStatus, selectedStage, sortBy]);
 
   const loadIdeas = async () => {
     try {
@@ -124,8 +143,13 @@ const stageLabels = {
     }
 
     // Status filter
-    if (selectedStatus && selectedStatus !== 'جميع الحالات') {
+    if (selectedStatus && selectedStatus !== '') {
       filtered = filtered.filter(idea => idea.status === selectedStatus);
+    }
+
+    // Stage filter
+    if (selectedStage && selectedStage !== '') {
+      filtered = filtered.filter(idea => idea.stage === selectedStage);
     }
 
     // Sort
@@ -172,7 +196,7 @@ const stageLabels = {
 
           {/* Filters */}
           <div className="bg-white rounded-xl shadow-sm border p-6 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Search */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">البحث</label>
@@ -215,8 +239,24 @@ const stageLabels = {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {statuses.map(status => (
-                    <option key={status} value={status === 'جميع الحالات' ? '' : status}>
-                      {status === 'جميع الحالات' ? status : (statusLabels[status as keyof typeof statusLabels] || status)}
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Stage */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">المرحلة</label>
+                <select
+                  value={selectedStage}
+                  onChange={(e) => setSelectedStage(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {stages.map(stage => (
+                    <option key={stage.value} value={stage.value}>
+                      {stage.label}
                     </option>
                   ))}
                 </select>
@@ -245,6 +285,7 @@ const stageLabels = {
                   setSearchTerm('');
                   setSelectedCategory('');
                   setSelectedStatus('');
+                  setSelectedStage('');
                   setSortBy('newest');
                 }}
                 className="text-blue-600 hover:text-blue-700 font-medium"
@@ -354,6 +395,7 @@ const stageLabels = {
                     setSearchTerm('');
                     setSelectedCategory('');
                     setSelectedStatus('');
+                    setSelectedStage('');
                     setSortBy('newest');
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"

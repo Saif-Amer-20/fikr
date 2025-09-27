@@ -74,6 +74,7 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
   const [isVoted, setIsVoted] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
+  const [voteLoading, setVoteLoading] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
@@ -82,6 +83,12 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
       try {
         const res = await api.get(`/ideas/${params.id}`);
         setIdea(res.data);
+        
+        // Check if current user has voted
+        if (user && res.data.votes) {
+          const hasVoted = res.data.votes.some((vote: any) => vote.voterId === user.id);
+          setIsVoted(hasVoted);
+        }
       } catch (e) {
         console.error(e);
         router.push('/ideas');
@@ -90,22 +97,62 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
       }
     };
     fetchIdea();
-  }, [params.id]);
+  }, [params.id, user]);
 
   const handleVote = async () => {
-    if (!user || !idea) return;
+    if (!user || !idea || voteLoading) return;
+
+    // Prevent multiple clicks
+    setVoteLoading(true);
+
+    // Optimistic update - update UI immediately
+    const newIsVoted = !isVoted;
+    const currentVoteCount = idea._count?.votes || idea.votes.length;
+    const newVoteCount = newIsVoted ? currentVoteCount + 1 : currentVoteCount - 1;
+    
+    // Update UI immediately for instant feedback
+    setIsVoted(newIsVoted);
+    setIdea(prevIdea => ({
+      ...prevIdea!,
+      _count: {
+        ...prevIdea!._count,
+        votes: newVoteCount,
+        comments: prevIdea!._count?.comments || prevIdea!.comments.length,
+      }
+    }));
 
     try {
+      // Call the vote API in background
       await api.post(`/ideas/${idea.id}/vote?userId=${user.id}`);
-      setIsVoted(!isVoted);
-      setIdea({
-        ...idea,
-        votes: isVoted 
-          ? idea.votes.filter(v => v.userId !== user.id)
-          : [...idea.votes, { userId: user.id }]
-      });
+      
+      // Optionally, refetch data in background to ensure consistency
+      // but don't update UI since we already did optimistic update
+      const refreshResponse = await api.get(`/ideas/${params.id}`);
+      const refreshedIdea = refreshResponse.data;
+      
+      // Verify our optimistic update was correct, if not, correct it
+      const actualUserVoted = refreshedIdea.votes.some((vote: any) => vote.voterId === user.id);
+      if (actualUserVoted !== newIsVoted) {
+        // Our optimistic update was wrong, correct it
+        setIsVoted(actualUserVoted);
+        setIdea(refreshedIdea);
+      }
+      
     } catch (error) {
       console.error('Error voting:', error);
+      
+      // Rollback optimistic update on error
+      setIsVoted(!newIsVoted);
+      setIdea(prevIdea => ({
+        ...prevIdea!,
+        _count: {
+          ...prevIdea!._count,
+          votes: currentVoteCount,
+          comments: prevIdea!._count?.comments || prevIdea!.comments.length,
+        }
+      }));
+    } finally {
+      setVoteLoading(false);
     }
   };
 
@@ -119,9 +166,15 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
         content: newComment
       });
       
+      const newComments = [response.data, ...idea.comments];
       setIdea({
         ...idea,
-        comments: [response.data, ...idea.comments]
+        comments: newComments,
+        _count: {
+          ...idea._count,
+          votes: idea._count?.votes || idea.votes.length,
+          comments: newComments.length,
+        }
       });
       setNewComment('');
     } catch (error) {
