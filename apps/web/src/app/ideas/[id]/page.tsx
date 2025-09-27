@@ -84,10 +84,25 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
         const res = await api.get(`/ideas/${params.id}`);
         setIdea(res.data);
         
-        // Check if current user has voted
+        console.log('📊 Idea loaded:', {
+          ideaId: res.data.id,
+          totalVotes: res.data._count?.votes || res.data.votes?.length || 0,
+          allVotes: res.data.votes,
+          currentUserId: user?.id
+        });
+        
+        // Check if current user has voted - this will run every time user or idea changes
         if (user && res.data.votes) {
-          const hasVoted = res.data.votes.some((vote: any) => vote.voterId === user.id);
+          const userId = Number(user.id);
+          const userVotes = res.data.votes.filter((vote: any) => {
+            const voterId = Number(vote.voterId);
+            return voterId === userId;
+          });
+          const hasVoted = userVotes.length > 0;
+          
+          // Set the vote state immediately
           setIsVoted(hasVoted);
+          console.log(`Vote state set to: ${hasVoted} for user ${userId}`);
         }
       } catch (e) {
         console.error(e);
@@ -96,8 +111,28 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
         setLoading(false);
       }
     };
-    fetchIdea();
+    
+    // Only fetch if we have a user, otherwise wait
+    if (user) {
+      fetchIdea();
+    }
   }, [params.id, user]);
+
+  // Additional effect to check vote state when both idea and user are available
+  useEffect(() => {
+    if (user && idea && idea.votes) {
+      const userId = Number(user.id);
+      const userVotes = idea.votes.filter((vote: any) => {
+        const voterId = Number(vote.voterId);
+        return voterId === userId;
+      });
+      const hasVoted = userVotes.length > 0;
+      
+      // Always update vote state when user or idea changes
+      setIsVoted(hasVoted);
+      console.log(`Vote state updated to: ${hasVoted} for user ${userId}`);
+    }
+  }, [user, idea]);
 
   const handleVote = async () => {
     if (!user || !idea || voteLoading) return;
@@ -105,52 +140,28 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
     // Prevent multiple clicks
     setVoteLoading(true);
 
-    // Optimistic update - update UI immediately
-    const newIsVoted = !isVoted;
-    const currentVoteCount = idea._count?.votes || idea.votes.length;
-    const newVoteCount = newIsVoted ? currentVoteCount + 1 : currentVoteCount - 1;
-    
-    // Update UI immediately for instant feedback
-    setIsVoted(newIsVoted);
-    setIdea(prevIdea => ({
-      ...prevIdea!,
-      _count: {
-        ...prevIdea!._count,
-        votes: newVoteCount,
-        comments: prevIdea!._count?.comments || prevIdea!.comments.length,
-      }
-    }));
-
     try {
-      // Call the vote API in background
-      await api.post(`/ideas/${idea.id}/vote?userId=${user.id}`);
+      // Call the vote API
+      const voteResponse = await api.post(`/ideas/${idea.id}/vote?userId=${user.id}`);
       
-      // Optionally, refetch data in background to ensure consistency
-      // but don't update UI since we already did optimistic update
+      // Use the API response "voted" field to set the button state immediately
+      const apiVotedStatus = voteResponse.data.voted;
+      setIsVoted(apiVotedStatus);
+      
+      // Refetch data to get accurate vote count
       const refreshResponse = await api.get(`/ideas/${params.id}`);
       const refreshedIdea = refreshResponse.data;
       
-      // Verify our optimistic update was correct, if not, correct it
-      const actualUserVoted = refreshedIdea.votes.some((vote: any) => vote.voterId === user.id);
-      if (actualUserVoted !== newIsVoted) {
-        // Our optimistic update was wrong, correct it
-        setIsVoted(actualUserVoted);
-        setIdea(refreshedIdea);
-      }
+      // Update idea data
+      setIdea(refreshedIdea);
+      
+      // Verify and set final vote state from database
+      const userId = Number(user.id);
+      const actualUserVoted = refreshedIdea.votes.some((vote: any) => Number(vote.voterId) === userId);
+      setIsVoted(actualUserVoted);
       
     } catch (error) {
       console.error('Error voting:', error);
-      
-      // Rollback optimistic update on error
-      setIsVoted(!newIsVoted);
-      setIdea(prevIdea => ({
-        ...prevIdea!,
-        _count: {
-          ...prevIdea!._count,
-          votes: currentVoteCount,
-          comments: prevIdea!._count?.comments || prevIdea!.comments.length,
-        }
-      }));
     } finally {
       setVoteLoading(false);
     }
@@ -276,19 +287,36 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
                   <button
                     onClick={handleVote}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
-                      isVoted 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-600'
-                    }`}
+                    disabled={voteLoading}
+                    className={`
+                      flex items-center justify-between w-56 px-6 py-4 rounded-2xl font-bold text-lg transition-all duration-300
+                      ${isVoted 
+                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }
+                      ${voteLoading ? 'opacity-75 cursor-not-allowed' : 'cursor-pointer'}
+                    `}
                   >
-                    <svg className="w-5 h-5" fill={isVoted ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3.5M3 16.5v2c0 1.38 1.12 2.5 2.5 2.5h13c1.38 0 2.5-1.12 2.5-2.5v-2" />
-                    </svg>
-                    <span>{isVoted ? 'تم التصويت' : 'صوّت'}</span>
-                    <span className={`px-2 py-1 rounded-full text-sm ${isVoted ? 'bg-white/20' : 'bg-white'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                        <svg 
+                          className={`w-5 h-5 ${isVoted ? 'text-blue-600' : 'text-gray-600'}`} 
+                          fill="currentColor" 
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                        </svg>
+                      </div>
+                      <span>
+                        {voteLoading ? 'جاري التصويت...' : (isVoted ? 'تم التصويت' : 'صوّت')}
+                      </span>
+                    </div>
+                    <div className={`
+                      w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg
+                      ${isVoted ? 'bg-white text-blue-600' : 'bg-blue-600 text-white'}
+                    `}>
                       {votesCount}
-                    </span>
+                    </div>
                   </button>
                   
                   <div className="flex items-center gap-1 text-gray-500">
