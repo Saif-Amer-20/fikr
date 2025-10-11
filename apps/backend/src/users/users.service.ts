@@ -160,4 +160,19 @@ export class UsersService {
     
     return user;
   }
+
+  // تفعيل/إيقاف التصويت للمستخدم
+  async toggleVoting(userId: number, canVote: boolean) {
+    const user = await this.findOneInternal(userId);
+    
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { canVote: canVote },
+      include: { role: true }
+    });
+  }
 }

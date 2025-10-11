@@ -211,8 +211,8 @@ async function main() {
         summary: ideaData.summary,
         details: ideaData.details,
         category: ideaData.category,
-        status: ideaData.status,
-        stage: ideaData.stage,
+        status: ideaData.status as any,
+        stage: ideaData.stage as any,
         ownerId: ideaData.ownerId,
         score: ideaData.score,
         createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date in last 30 days

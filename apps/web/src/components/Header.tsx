@@ -56,6 +56,18 @@ export default function Header() {
                 >
                   إدارة المستخدمين
                 </Link>
+                <Link
+                  href="/admin/pending"
+                  className="text-orange-700 hover:text-orange-800 px-3 py-2 text-sm font-bold"
+                >
+                  الأفكار المعلقة
+                </Link>
+                <Link
+                  href="/admin/lookups"
+                  className="text-green-700 hover:text-green-800 px-3 py-2 text-sm font-bold"
+                >
+                  إدارة البيانات الأساسية
+                </Link>
               </>
             )}
            
@@ -148,6 +160,18 @@ export default function Header() {
                 className="block text-indigo-700 hover:text-indigo-800 px-3 py-2 text-sm font-bold"
               >
                 إدارة المستخدمين
+              </Link>
+              <Link
+                href="/admin/pending"
+                className="block text-orange-700 hover:text-orange-800 px-3 py-2 text-sm font-bold"
+              >
+                الأفكار المعلقة
+              </Link>
+              <Link
+                href="/admin/lookups"
+                className="block text-green-700 hover:text-green-800 px-3 py-2 text-sm font-bold"
+              >
+                إدارة البيانات الأساسية
               </Link>
             </>
           )}

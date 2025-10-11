@@ -254,7 +254,19 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
                       )}
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-2 flex-wrap items-center">
+                    {/* Edit button - only show for owner and if idea is in editable status */}
+                    {user && user.id === idea.owner.id && ['maswada', 'mursala'].includes(idea.status) && (
+                      <Link
+                        href={`/ideas/${idea.id}/edit`}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        تعديل
+                      </Link>
+                    )}
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[idea.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
                       {statusLabels[idea.status as keyof typeof statusLabels] || idea.status}
                     </span>
@@ -516,10 +528,13 @@ export default function IdeaDetailPage({ params }: { params: { id: string } }) {
                   >
                     العودة إلى قائمة الأفكار
                   </Link>
-                  {user?.id === idea.owner.id && (
-                    <button className="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition-colors font-medium">
+                  {user?.id === idea.owner.id && ['maswada', 'mursala'].includes(idea.status) && (
+                    <Link
+                      href={`/ideas/${idea.id}/edit`}
+                      className="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition-colors block text-center font-medium"
+                    >
                       تعديل الفكرة
-                    </button>
+                    </Link>
                   )}
                 </div>
               </div>

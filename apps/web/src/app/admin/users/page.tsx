@@ -11,6 +11,7 @@ interface User {
   email: string;
   department: string;
   isActive: boolean;
+  canVote: boolean;
   createdAt: string;
   roleId?: number;
   role?: {
@@ -109,6 +110,25 @@ export default function UsersManagementPage() {
     } catch (error) {
       console.error('Error updating user status:', error);
       alert('خطأ في تحديث حالة المستخدم. يرجى المحاولة مرة أخرى.');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const toggleVoting = async (userId: number, canVote: boolean) => {
+    try {
+      setUpdating(userId);
+      await api.put(`/users/${userId}/voting`, {
+        canVote: canVote
+      });
+      
+      // Update local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, canVote: canVote } : user
+      ));
+    } catch (error) {
+      console.error('Error updating voting permission:', error);
+      alert('خطأ في تحديث صلاحية التصويت. يرجى المحاولة مرة أخرى.');
     } finally {
       setUpdating(null);
     }
@@ -350,6 +370,7 @@ export default function UsersManagementPage() {
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">القسم</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الدور</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التصويت</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ التسجيل</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                     </tr>
@@ -396,6 +417,19 @@ export default function UsersManagementPage() {
                           }`}>
                             {user.isActive ? 'نشط' : 'غير نشط'}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => toggleVoting(user.id, !user.canVote)}
+                            disabled={updating === user.id}
+                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                              user.canVote
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : 'bg-red-100 text-red-700 hover:bg-red-200'
+                            } ${updating === user.id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            {user.canVote ? 'يستطيع التصويت' : 'لا يستطيع التصويت'}
+                          </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(user.createdAt).toLocaleDateString('ar-SA')}

@@ -32,4 +32,9 @@ export class UsersController {
   changePassword(@Param('id', ParseIntPipe) id: number, @Body() dto: ChangePasswordDto) {
     return this.usersService.changePassword(id, dto);
   }
+
+  @Put(':id/voting')
+  toggleVoting(@Param('id', ParseIntPipe) id: number, @Body() body: { canVote: boolean }) {
+    return this.usersService.toggleVoting(id, body.canVote);
+  }
 }

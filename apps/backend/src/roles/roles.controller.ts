@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Delete, ParseIntPipe, HttpCode } from '@nestjs/common';
 import { RolesService } from './roles.service';
 
 @Controller('roles')
@@ -18,5 +18,16 @@ export class RolesController {
   @Post()
   create(@Body() body: { name: string; description?: string; permissionKeys?: string[] }) {
     return this.rolesService.create(body);
+  }
+
+  @Put(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() body: { name?: string; description?: string; permissionKeys?: string[] }) {
+    return this.rolesService.update(id, body);
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.rolesService.remove(id);
   }
 }

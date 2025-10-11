@@ -116,7 +116,9 @@ const stageLabels = {
 
   const loadIdeas = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/ideas`);
+      // تمرير دور المستخدم إذا كان متاحاً
+      const userRole = user?.role?.name || '';
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'}/ideas?userRole=${userRole}`);
       setIdeas(response.data);
     } catch (error) {
       console.error('Error loading ideas:', error);

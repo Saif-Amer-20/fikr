@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  backend:
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/fikr
+      JWT_SECRET: changeme
+      JWT_EXPIRATION: 3600s
+      PORT: 4000
+    command: sh -c "npx prisma db push && npm start"

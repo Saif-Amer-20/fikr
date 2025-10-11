@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, ParseIntPipe, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, ParseIntPipe, Query, Put } from '@nestjs/common';
 import { IdeasService } from './ideas.service';
 import { CreateIdeaDto } from './dto/create-idea.dto';
 
@@ -7,8 +7,8 @@ export class IdeasController {
   constructor(private readonly ideasService: IdeasService) {}
 
   @Get()
-  findAll() {
-    return this.ideasService.findAll();
+  findAll(@Query('userRole') userRole?: string) {
+    return this.ideasService.findAll(userRole);
   }
 
   @Get(':id')
@@ -29,6 +29,12 @@ export class IdeasController {
     return this.ideasService.vote(id, userIdNum);
   }
 
+  @Put(':id')
+  update(@Param('id', ParseIntPipe) id: number, @Body() dto: CreateIdeaDto, @Query('ownerId', ParseIntPipe) ownerId: number) {
+    // في تطبيق فعلي، يتم استخراج معرف المالك من JWT
+    return this.ideasService.update(id, dto, ownerId);
+  }
+
   @Post(':id/comments')
   addComment(
     @Param('id', ParseIntPipe) id: number, 
@@ -40,5 +46,21 @@ export class IdeasController {
     const content = body.content;
     const isAnonymous = body.isAnonymous || false;
     return this.ideasService.addComment(id, authorIdNum, content, isAnonymous);
+  }
+
+  // Admin endpoints لإدارة الأفكار المُقدمة
+  @Get('pending/review')
+  getPendingIdeas() {
+    return this.ideasService.getPendingIdeas();
+  }
+
+  @Put(':id/approve')
+  approveIdea(@Param('id', ParseIntPipe) id: number) {
+    return this.ideasService.approvePendingIdea(id);
+  }
+
+  @Put(':id/reject')
+  rejectIdea(@Param('id', ParseIntPipe) id: number) {
+    return this.ideasService.rejectPendingIdea(id);
   }
 }
