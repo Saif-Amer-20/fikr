@@ -1,37 +1,37 @@
-# منصّة فِكْر لإدارة الأفكار
+# Fikr Platform for Idea Management
 
-هذا المستودع يحتوي على تطبيق ويب متكامل لإدارة الأفكار داخل مؤسّسة حكومية أو كبرى. تم تصميمه اعتمادًا على **Next.js** للواجهة الأمامية و **NestJS** للواجهة الخلفية، مع قاعدة بيانات **PostgreSQL** مهيّأة عبر **Prisma ORM**. التطبيق يدعم اللغة العربية بالكامل (RTL)، ويمكن توسيعه بسهولة لإضافة لغات أخرى.
+This repository contains a complete web application for managing ideas within a government institution or a large organization. It is built using **Next.js** for the frontend and **NestJS** for the backend, with a **PostgreSQL** database configured through **Prisma ORM**. The application fully supports Arabic (RTL) and can be easily extended to add other languages.
 
-## الميزات الرئيسية
+## Key Features
 
-* **🔐 نظام مصادقة متكامل**: تسجيل دخول وإنشاء حسابات جديدة مع JWT tokens
-* **👤 إدارة المستخدمين**: ملفات شخصية شاملة مع إمكانية تعديل المعلومات والصور الشخصية
-* **🖼️ الصور الشخصية**: رفع وإدارة الصور الشخصية للمستخدمين
-* **🔑 تغيير كلمات المرور**: نظام آمن لتغيير كلمات المرور مع التحقق
-* **🎯 إدارة الأفكار**: نظام شامل لإضافة وإدارة ومتابعة الأفكار
-* **📊 إدارة المراحل**: نظام متقدم لإدارة مراحل تقدم الأفكار مع واجهات بصرية
-* **🔄 انتقال المراحل**: نظام مرن لانتقال الأفكار بين المراحل المختلفة
-* **👨‍💼 لوحة الإدارة**: واجهات إدارية شاملة للمدراء لإدارة المستخدمين والمراحل
-* **📈 الإحصائيات والتقارير**: عرض إحصائيات مفصلة للأفكار والمستخدمين
-* **🌐 دعم كامل للعربية RTL**: تصميم محسّن للغة العربية مع دعم الاتجاه من اليمين لليسار
+* **🔐 Integrated Authentication System**: Login and registration with JWT tokens
+* **👤 User Management**: Comprehensive user profiles with the ability to edit information and profile pictures
+* **🖼️ Profile Pictures**: Upload and manage user profile images
+* **🔑 Password Change**: Secure password change system with verification
+* **🎯 Idea Management**: A complete system for adding, managing, and tracking ideas
+* **📊 Stage Management**: Advanced system for managing idea progress stages with visual interfaces
+* **🔄 Stage Transitions**: Flexible system for moving ideas between different stages
+* **👨‍💼 Admin Dashboard**: Comprehensive administrative interfaces for managing users and stages
+* **📈 Statistics and Reports**: Detailed statistics for ideas and users
+* **🌐 Full Arabic RTL Support**: Optimized design for Arabic with right-to-left layout support
 
-## المتطلبات العامة
+## General Requirements
 
-* **الواجهة الأمامية**: React/Next.js مع TypeScript، Tailwind CSS، shadcn/ui.
-* **الواجهة الخلفية**: NestJS مع REST API وWebSocket للأحداث الحية.
-* **قاعدة البيانات**: PostgreSQL مع Prisma. ملف المخطط موجود في `apps/backend/prisma/schema.prisma` ويحتوي على جميع الجداول والعلاقات المطلوبة، كما هو موضّح في الوثائق【985668824657452†L176-L188】.
-* **نظام صلاحيات ديناميكي (RBAC)**: تم تعريف جداول `Role` و`Permission` و`RolePermission` بعلاقات عديدة-لعديد مع مفتاح مركّب لتجنّب تكرار الأدوار والصلاحيات【985668824657452†L176-L188】.
-* **Docker**: يمكنك تشغيل كل الخدمات بواسطة `docker compose` محليًا، أو بناء صور منفصلة للنشر في بيئة إنتاج.
+* **Frontend**: React/Next.js with TypeScript, Tailwind CSS, shadcn/ui.
+* **Backend**: NestJS with REST API and WebSocket for live events.
+* **Database**: PostgreSQL with Prisma. The schema file is located at `apps/backend/prisma/schema.prisma` and contains all required tables and relationships as described in the documentation.
+* **Dynamic Role-Based Access Control (RBAC)**: Tables `Role`, `Permission`, and `RolePermission` are defined with many-to-many relationships using a composite key to avoid duplicate roles and permissions.
+* **Docker**: All services can be run locally using `docker compose`, or built as separate images for deployment in production.
 
-## الهيكلية
+## Structure
 
 ```
 fikr/
-├── README.md                # هذا الملف
-├── docker-compose.yml       # تعريف الخدمات: Postgres، backend، frontend
-├── package.json             # يعرّف workspaces لتشغيل الواجهة والخلفية
+├── README.md                # This file
+├── docker-compose.yml       # Services definition: Postgres, backend, frontend
+├── package.json             # Defines workspaces for running frontend and backend
 ├── apps/
-│   ├── backend/             # تطبيق NestJS
+│   ├── backend/             # NestJS application
 │   │   ├── Dockerfile
 │   │   ├── package.json
 │   │   ├── tsconfig.json
@@ -75,7 +75,7 @@ fikr/
 │   │           └── dto/
 │   │               ├── create-idea.dto.ts
 │   │               └── create-comment.dto.ts
-│   └── web/                 # تطبيق Next.js
+│   └── web/                 # Next.js application
 │       ├── Dockerfile
 │       ├── package.json
 │       ├── tailwind.config.js
@@ -114,72 +114,81 @@ fikr/
 │           │   └── AuthContext.tsx
 │           └── lib/
 │               └── api.ts
-
 ```
 
-## تشغيل المشروع محليًا
+## Running the Project Locally
 
-1. **ثبت المتطلبات**: تأكد من وجود [Docker](https://docs.docker.com/get-docker/) و [Node.js](https://nodejs.org) على جهازك.
-2. **البيئة**: أنشئ ملف `.env` في جذر `apps/backend` يحوي متغيرات الاتصال بقاعدة البيانات وإعدادات JWT. يمكنك استخدام `.env.example` كمرجع. على سبيل المثال:
-   ```env
-   DATABASE_URL=postgresql://postgres:postgres@postgres:5432/fikr
-   JWT_SECRET=changeme
-   JWT_EXPIRATION=3600s
-   ```
-3. **تشغيل الخدمات**: من جذر المشروع (`fikr/`) نفّذ:
-   ```sh
-   docker compose up -d
-   ```
-   يقوم هذا الأمر ببناء الحاويات وتشغيل قاعدة البيانات والواجهة الخلفية والواجهة الأمامية تلقائيًا.
-4. **تهجير قاعدة البيانات**: بعد تشغيل الخدمات، استخدم Prisma لتطبيق المهاجرات وإعداد الأدوار الأساسية:
+1. **Install Requirements**: Ensure you have [Docker](https://docs.docker.com/get-docker/) and [Node.js](https://nodejs.org) installed on your system.
 
-   ```sh
-   docker compose exec backend npx prisma migrate deploy
-   ```
+2. **Environment Setup**: Create a `.env` file in the root of `apps/backend` containing database connection variables and JWT configuration. You can use `.env.example` as a reference. For example:
 
-   **إعداد الأدوار الأساسية**: يجب إنشاء الأدوار الأساسية في قاعدة البيانات:
+```env
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/fikr
+JWT_SECRET=changeme
+JWT_EXPIRATION=3600s
+```
 
-   ```sh
-   docker compose exec postgres psql -U postgres -d fikr -c "INSERT INTO \"Role\" (name, description) VALUES ('admin', 'مدير النظام'), ('user', 'مستخدم عادي');"
-   ```
+3. **Start Services**: From the project root (`fikr/`) run:
 
-5. **التطوير المحلي بدون Docker**: يمكنك تشغيل الواجهة والخلفية مباشرة باستخدام npm:
-   ```sh
-   # في جذر المشروع
-   npm install
-   npm run dev
-   ```
-   يقوم السكربت `dev` بتشغيل الواجهة في `apps/web` على http://localhost:3000 والواجهة الخلفية في `apps/backend` على http://localhost:4000.
+```sh
+docker compose up -d
+```
 
-## الحسابات التجريبية
+This command builds the containers and automatically runs the database, backend, and frontend.
 
-بعد إعداد قاعدة البيانات والأدوار، يمكنك استخدام الحسابات التالية للاختبار:
+4. **Database Migration**: After the services start, use Prisma to apply migrations and prepare the basic roles:
 
-* **حساب المدير**: `admin@fikr.com` (لا يتطلب كلمة مرور)
-* **حساب المستخدم**: `test@example.com` (لا يتطلب كلمة مرور)
+```sh
+docker compose exec backend npx prisma migrate deploy
+```
 
-يمكنك أيضًا إنشاء حسابات جديدة من خلال صفحة التسجيل في التطبيق.
+**Create Default Roles**:
 
-## الوظائف المتاحة
+```sh
+docker compose exec postgres psql -U postgres -d fikr -c "INSERT INTO \"Role\" (name, description) VALUES ('admin', 'System Administrator'), ('user', 'Regular User');"
+```
 
-### للمستخدمين العاديين:
-* **إدارة الملف الشخصي**: تعديل المعلومات الشخصية ورفع الصور الشخصية
-* **تغيير كلمة المرور**: نظام آمن لتغيير كلمة المرور
-* **إدارة الأفكار**: إضافة وتعديل ومتابعة الأفكار الشخصية
-* **عرض الإحصائيات**: مراجعة إحصائيات الأفكار والتفاعلات
+5. **Local Development Without Docker**: You can run the frontend and backend directly using npm:
 
-### للمدراء:
-* **إدارة المستخدمين**: عرض وإدارة جميع حسابات المستخدمين
-* **إدارة المراحل**: التحكم في مراحل تقدم الأفكار والانتقالات بينها
-* **الإحصائيات العامة**: عرض إحصائيات شاملة للنظام
-* **إدارة الأدوار**: التحكم في أدوار المستخدمين وصلاحياتهم
+```sh
+# From the project root
+npm install
+npm run dev
+```
 
-## ملاحظات الأمن والأداء
+The `dev` script runs the frontend in `apps/web` on `http://localhost:3000` and the backend in `apps/backend` on `http://localhost:4000`.
 
-* تم تأمين جميع كلمات المرور باستخدام خوارزمية **Bcrypt** والتعامل مع Tokens عبر JWT.
-* تم استخدام قيود **Prisma** لتعريف المفاتيح المركبة والفهارس لمنع التكرار في جداول العديد-لعديد【985668824657452†L176-L188】.
-* يمكن تفعيل إعدادات Rate Limiting، Helmet وCORS من خلال تعديل ملفات إعداد NestJS في `apps/backend/src/main.ts`.
+## Test Accounts
 
-## المساهمات
+After setting up the database and roles, you can use the following accounts for testing:
 
-تم إعداد هذا المشروع لتمكين فرق التطوير من بناء منصة قابلة للتوسع بسهولة. يمكنك إضافة وحدات جديدة (Modules) في NestJS أو صفحات ومكونات جديدة في Next.js مع الحفاظ على هيكلية العمل القائمة. للمساهمة أو الإبلاغ عن مشكلة، يُرجى فتح طلب دمج أو تذكرة عبر النظام المتبّع في المؤسسة.
+* **Admin Account**: `admin@fikr.com` (no password required)
+* **User Account**: `test@example.com` (no password required)
+
+You can also create new accounts through the registration page in the application.
+
+## Available Functions
+
+### For Regular Users
+
+* **Profile Management**: Edit personal information and upload profile images
+* **Password Change**: Secure password change system
+* **Idea Management**: Add, edit, and track personal ideas
+* **Statistics View**: Review idea statistics and interactions
+
+### For Administrators
+
+* **User Management**: View and manage all user accounts
+* **Stage Management**: Control idea progress stages and transitions
+* **General Statistics**: View comprehensive system statistics
+* **Role Management**: Manage user roles and permissions
+
+## Security and Performance Notes
+
+* All passwords are secured using the **Bcrypt** algorithm and tokens are handled using **JWT**.
+* **Prisma constraints** are used to define composite keys and indexes to prevent duplication in many-to-many tables.
+* Rate Limiting, Helmet, and CORS settings can be enabled by modifying the NestJS configuration in `apps/backend/src/main.ts`.
+
+## Contributions
+
+This project was prepared to enable development teams to build an easily scalable platform. New modules can be added in NestJS or new pages and components can be added in Next.js while maintaining the existing architecture. To contribute or report an issue, open a merge request or create a ticket through the organization’s issue tracking system.
